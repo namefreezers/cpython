@@ -558,7 +558,7 @@ list_repeat(PyListObject *a, Py_ssize_t n)
     PyObject **dest_end = dest + size;
     if (Py_SIZE(a) == 1) {
         PyObject *elem = a->ob_item[0];
-        Py_SET_REFCNT(elem, Py_REFCNT(elem) + n);
+        Py_INCREF_n(elem, n);
 #ifdef Py_REF_DEBUG
         _Py_RefTotal += n;
 #endif
@@ -570,7 +570,7 @@ list_repeat(PyListObject *a, Py_ssize_t n)
         PyObject **src = a->ob_item;
         PyObject **src_end = src + Py_SIZE(a);
         while (src < src_end) {
-            Py_SET_REFCNT(*src, Py_REFCNT(*src) + n);
+            Py_INCREF_n(*src, n);
 #ifdef Py_REF_DEBUG
             _Py_RefTotal += n;
 #endif
@@ -762,7 +762,10 @@ list_inplace_repeat(PyListObject *self, Py_ssize_t n)
     for (i = 1; i < n; i++) { /* Start counting at 1, not 0 */
         for (j = 0; j < size; j++) {
             PyObject *o = items[j];
-            Py_INCREF(o);
+            //Py_INCREF(o);
+            if (i == 1) {
+                Py_INCREF_n(o, n);
+            }
             items[p++] = o;
         }
     }
