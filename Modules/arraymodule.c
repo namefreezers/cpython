@@ -1075,10 +1075,10 @@ array_inplace_concat(arrayobject *self, PyObject *bb)
 static PyObject *
 array_inplace_repeat(arrayobject *self, Py_ssize_t n)
 {
-    char *items, *p;
-    Py_ssize_t size, i;
+    char *source;
+    Py_ssize_t size, newbytes;
 
-    if (Py_SIZE(self) > 0) {
+    if (Py_SIZE(self) > 0 && n != 1 ) {
         if (n < 0)
             n = 0;
         if ((self->ob_descr->itemsize != 0) &&
@@ -1091,10 +1091,15 @@ array_inplace_repeat(arrayobject *self, Py_ssize_t n)
         }
         if (array_resize(self, n * Py_SIZE(self)) == -1)
             return NULL;
-        items = p = self->ob_item;
-        for (i = 1; i < n; i++) {
-            p += size;
-            memcpy(p, items, size);
+
+        newbytes = n * size;
+        source = self->ob_item;
+        Py_ssize_t done = size;
+        // repeatedly double the number of bytes copied
+        while (done < newbytes) {
+            Py_ssize_t ncopy = Py_MIN(done, newbytes - done);
+            memcpy(source + done, source, ncopy);
+            done += ncopy;
         }
     }
     Py_INCREF(self);
