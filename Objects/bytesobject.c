@@ -1421,8 +1421,6 @@ bytes_concat(PyObject *a, PyObject *b)
 static PyObject *
 bytes_repeat(PyBytesObject *a, Py_ssize_t n)
 {
-    Py_ssize_t i;
-    Py_ssize_t j;
     Py_ssize_t size;
     PyBytesObject *op;
     size_t nbytes;
@@ -1457,20 +1455,9 @@ _Py_COMP_DIAG_IGNORE_DEPR_DECLS
     op->ob_shash = -1;
 _Py_COMP_DIAG_POP
     op->ob_sval[size] = '\0';
-    if (Py_SIZE(a) == 1 && n > 0) {
-        memset(op->ob_sval, a->ob_sval[0] , n);
-        return (PyObject *) op;
-    }
-    i = 0;
-    if (i < size) {
-        memcpy(op->ob_sval, a->ob_sval, Py_SIZE(a));
-        i = Py_SIZE(a);
-    }
-    while (i < size) {
-        j = (i <= size-i)  ?  i  :  size-i;
-        memcpy(op->ob_sval+i, op->ob_sval, j);
-        i += j;
-    }
+
+    _PyBytes_Repeat(op->ob_sval, size, a->ob_sval, Py_SIZE(a));
+
     return (PyObject *) op;
 }
 

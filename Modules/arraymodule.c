@@ -1075,32 +1075,23 @@ array_inplace_concat(arrayobject *self, PyObject *bb)
 static PyObject *
 array_inplace_repeat(arrayobject *self, Py_ssize_t n)
 {
-    char *source;
-    Py_ssize_t size, newbytes;
+    const Py_ssize_t array_size = Py_SIZE(self);
 
-    if (Py_SIZE(self) > 0 && n != 1 ) {
+    if (array_size > 0 && n != 1 ) {
         if (n < 0)
             n = 0;
         if ((self->ob_descr->itemsize != 0) &&
-            (Py_SIZE(self) > PY_SSIZE_T_MAX / self->ob_descr->itemsize)) {
+            (array_size > PY_SSIZE_T_MAX / self->ob_descr->itemsize)) {
             return PyErr_NoMemory();
         }
-        size = Py_SIZE(self) * self->ob_descr->itemsize;
+        Py_ssize_t size = array_size * self->ob_descr->itemsize;
         if (n > 0 && size > PY_SSIZE_T_MAX / n) {
             return PyErr_NoMemory();
         }
-        if (array_resize(self, n * Py_SIZE(self)) == -1)
+        if (array_resize(self, n * array_size) == -1)
             return NULL;
 
-        newbytes = n * size;
-        source = self->ob_item;
-        Py_ssize_t done = size;
-        // repeatedly double the number of bytes copied
-        while (done < newbytes) {
-            Py_ssize_t ncopy = Py_MIN(done, newbytes - done);
-            memcpy(source + done, source, ncopy);
-            done += ncopy;
-        }
+        _PyBytes_RepeatInPlace(self->ob_item, size, n * size);
     }
     Py_INCREF(self);
     return (PyObject *)self;

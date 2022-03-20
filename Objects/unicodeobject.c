@@ -12786,13 +12786,7 @@ unicode_repeat(PyObject *str, Py_ssize_t len)
         Py_ssize_t done = PyUnicode_GET_LENGTH(str);
         Py_ssize_t char_size = PyUnicode_KIND(str);
         char *to = (char *) PyUnicode_DATA(u);
-        memcpy(to, PyUnicode_DATA(str),
-                  PyUnicode_GET_LENGTH(str) * char_size);
-        while (done < nchars) {
-            n = (done <= nchars-done) ? done : nchars-done;
-            memcpy(to + (done * char_size), to, n * char_size);
-            done += n;
-        }
+        _PyBytes_Repeat(to, nchars, PyUnicode_DATA(str), PyUnicode_GET_LENGTH(str) * char_size);
     }
 
     assert(_PyUnicode_CheckConsistency(u, 1));

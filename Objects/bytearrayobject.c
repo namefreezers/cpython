@@ -318,37 +318,16 @@ bytearray_iconcat(PyByteArrayObject *self, PyObject *other)
 static PyObject *
 bytearray_repeat(PyByteArrayObject *self, Py_ssize_t count)
 {
-    PyByteArrayObject *result;
-    Py_ssize_t mysize;
-    Py_ssize_t size;
-    const char *buf;
-
     if (count < 0)
         count = 0;
-    mysize = Py_SIZE(self);
+    const Py_ssize_t mysize = Py_SIZE(self);
     if (count > 0 && mysize > PY_SSIZE_T_MAX / count)
         return PyErr_NoMemory();
-    size = mysize * count;
-    result = (PyByteArrayObject *)PyByteArray_FromStringAndSize(NULL, size);
-    buf = PyByteArray_AS_STRING(self);
+    Py_ssize_t size = mysize * count;
+    PyByteArrayObject* result = (PyByteArrayObject *)PyByteArray_FromStringAndSize(NULL, size);
+    const char* buf = PyByteArray_AS_STRING(self);
     if (result != NULL && size != 0) {
-        if (mysize == 1)
-            memset(result->ob_bytes, buf[0], size);
-        else {
-            Py_ssize_t i, j;
-
-            i = 0;
-            if (i < size) {
-                memcpy(result->ob_bytes, buf, mysize);
-                i = mysize;
-            }
-            // repeatedly double the number of bytes copied
-            while (i < size) {
-                j = Py_MIN(i, size - i);
-                memcpy(result->ob_bytes + i, result->ob_bytes, j);
-                i += j;
-            }
-        }
+        _PyBytes_Repeat(result->ob_bytes, size, buf, mysize);
     }
     return (PyObject *)result;
 }
@@ -356,33 +335,24 @@ bytearray_repeat(PyByteArrayObject *self, Py_ssize_t count)
 static PyObject *
 bytearray_irepeat(PyByteArrayObject *self, Py_ssize_t count)
 {
-    Py_ssize_t mysize;
-    Py_ssize_t size;
-    char *buf;
-
     if (count < 0)
         count = 0;
-    mysize = Py_SIZE(self);
+    else {
+        if (count == 1) {
+            Py_INCREF(self);
+            return (PyObject*)self;
+        }
+    }
+
+    const Py_ssize_t mysize = Py_SIZE(self);
     if (count > 0 && mysize > PY_SSIZE_T_MAX / count)
         return PyErr_NoMemory();
-    size = mysize * count;
+    const Py_ssize_t size = mysize * count;
     if (PyByteArray_Resize((PyObject *)self, size) < 0)
         return NULL;
 
-    buf = PyByteArray_AS_STRING(self);
-    if (mysize == 1)
-        memset(buf, buf[0], size);
-    else {
-        Py_ssize_t i, j;
-
-        i = mysize;
-        // repeatedly double the number of bytes copied
-        while (i < size) {
-            j = Py_MIN(i, size - i);
-            memcpy(buf + i, buf, j);
-            i += j;
-        }
-    }
+    char* buf = PyByteArray_AS_STRING(self);
+    _PyBytes_RepeatInPlace(buf, mysize, size);
 
     Py_INCREF(self);
     return (PyObject *)self;
