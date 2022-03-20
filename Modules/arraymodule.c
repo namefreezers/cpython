@@ -10,6 +10,7 @@
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include "pycore_moduleobject.h"  // _PyModule_GetState()
+#include "pycore_bytesobject.h"   // _PyBytes_Repeat
 #include "structmember.h"         // PyMemberDef
 #include <stddef.h>               // offsetof()
 #include <stddef.h>

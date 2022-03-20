@@ -6,44 +6,6 @@
 extern "C" {
 #endif
 
-#include <string.h>
-
-/** Helper function to implement the inplace repeat method on a buffer
- *
- * This method repeately doubles the number of bytes copied to reduce to the number of invocations of memcpy
- */
-static inline void _PyBytes_RepeatInPlace_helper(char* buffer, Py_ssize_t start_len, Py_ssize_t end_len)
-{
-    Py_ssize_t copied = start_len;
-    while (copied < end_len) {
-        Py_ssize_t bytes_to_copy = Py_MIN(copied, end_len - copied);
-        memcpy(buffer + copied, buffer, bytes_to_copy);
-        copied += bytes_to_copy;
-    }
-}
-
-// Helper function to implement the inplace repeat method on a buffer
-static inline void _PyBytes_RepeatInPlace(char* buffer, Py_ssize_t start_len, Py_ssize_t end_len)
-{
-    if (start_len==1)
-        memset(buffer, buffer[0], end_len);
-    else
-        _PyBytes_RepeatInPlace_helper(buffer, start_len, end_len);
-}
-
-// Helper function to implement the repeat method on a buffer
-static inline void _PyBytes_Repeat(char* dest, Py_ssize_t len_dest, const char* src, Py_ssize_t len_src)
-{
-    if (len_src == 1)
-        memset(dest, src[0], len_dest);
-    else {
-        memcpy(dest, src, len_src);
-        _PyBytes_RepeatInPlace_helper(dest, len_src, len_dest);
-    }
-}
-
-
-
 /* Type PyByteArrayObject represents a mutable array of bytes.
  * The Python API is that of a sequence;
  * the bytes are mapped to ints in [0, 256).
