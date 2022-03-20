@@ -41,11 +41,9 @@ _PyBytes_ReverseFind(const char *haystack, Py_ssize_t len_haystack,
  */
 static inline void _PyBytes_RepeatInPlace_helper(char* buffer, Py_ssize_t start_len, Py_ssize_t end_len)
 {
-    printf("_PyBytes_RepeatInPlace_helper: start %lld %lld\n", start_len, end_len);
     Py_ssize_t copied = start_len;
     while (copied < end_len) {
         Py_ssize_t bytes_to_copy = Py_MIN(copied, end_len - copied);
-        printf("_PyBytes_RepeatInPlace_helper %lld %lld %lld\n", copied, end_len, bytes_to_copy);
         memcpy(buffer + copied, buffer, bytes_to_copy);
         copied += bytes_to_copy;
     }
