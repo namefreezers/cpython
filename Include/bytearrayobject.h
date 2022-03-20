@@ -6,6 +6,8 @@
 extern "C" {
 #endif
 
+#include <string.h>
+
 /** Helper function to implement the inplace repeat method on a buffer
  *
  * This method repeately doubles the number of bytes copied to reduce to the number of invocations of memcpy
