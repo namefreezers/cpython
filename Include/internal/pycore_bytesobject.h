@@ -65,7 +65,8 @@ _PyBytes_RepeatInPlace(char* buffer, Py_ssize_t start_len, Py_ssize_t end_len)
  * the number of invocations of memcpy.
  */
 static inline void
-_PyBytes_Repeat(char* dest, Py_ssize_t len_dest, const char* src, Py_ssize_t len_src)
+_PyBytes_Repeat(char* dest, Py_ssize_t len_dest,
+                const char* src, Py_ssize_t len_src)
 {
     if (len_dest > 0) {
         if (len_src == 1)
