@@ -73,7 +73,13 @@ _PyBytes_Repeat(char* dest, Py_ssize_t len_dest,
             memset(dest, src[0], len_dest);
         else {
             memcpy(dest, src, len_src);
-            _PyBytes_RepeatInPlace_helper(dest, len_src, len_dest);
+
+            Py_ssize_t copied = len_src;
+            while (copied < len_dest) {
+                Py_ssize_t bytes_to_copy = Py_MIN(copied, len_dest - copied);
+                memcpy(dest + copied, dest, bytes_to_copy);
+                copied += bytes_to_copy;
+            }
         }
     }
 }
