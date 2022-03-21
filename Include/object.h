@@ -487,7 +487,7 @@ static inline void Py_INCREF(PyObject *op)
 #define Py_INCREF(op) Py_INCREF(_PyObject_CAST(op))
 
 /// Increment reference counter by specified number of items
-static inline void Py_INCREF_n(PyObject* op, int n)
+static inline void Py_INCREF_n(PyObject* op, Py_ssize_t n)
 {
 #ifdef Py_REF_DEBUG
     _Py_RefTotal++;

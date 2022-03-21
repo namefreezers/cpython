@@ -764,8 +764,7 @@ list_inplace_repeat(PyListObject *self, Py_ssize_t n)
     }
     for (i = 1; i < n; i++) { /* Start counting at 1, not 0 */
         for (j = 0; j < size; j++) {
-            PyObject *o = items[j];
-            items[p++] = o;
+            items[p++] = items[j];
         }
     }
     Py_INCREF(self);
