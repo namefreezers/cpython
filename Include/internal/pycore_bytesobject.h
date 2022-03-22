@@ -42,17 +42,17 @@ _PyBytes_ReverseFind(const char *haystack, Py_ssize_t len_haystack,
  * This method repeately doubles the number of bytes copied to reduce
  * the number of invocations of memcpy
  */
-void
+PyAPI_FUNC(void)
 _PyBytes_RepeatInPlace(char* buffer, Py_ssize_t start_len, Py_ssize_t end_len);
 
 /** Helper function to implement the repeat method on a buffer
  *
  * len_dest is assumed to be an integer multiple of len_src.
- * 
+ *
  * This method repeately doubles the number of bytes copied to reduce
  * the number of invocations of memcpy.
  */
-void
+PyAPI_FUNC(void)
 _PyBytes_Repeat(char* dest, Py_ssize_t len_dest,
     const char* src, Py_ssize_t len_src);
 
