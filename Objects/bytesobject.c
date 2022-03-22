@@ -3515,3 +3515,42 @@ _PyBytesWriter_WriteBytes(_PyBytesWriter *writer, void *ptr,
 
     return str;
 }
+
+/** Helper function to implement the inplace repeat method on a buffer
+ *
+ * len_dest is assumed to be an integer multiple of len_src.
+ *
+ * This method repeately doubles the number of bytes copied to reduce
+ * the number of invocations of memcpy
+ */
+void
+_PyBytes_RepeatInPlace(char* buffer, Py_ssize_t start_len, Py_ssize_t end_len)
+{
+    if (start_len == 1)
+        memset(buffer, buffer[0], end_len);
+    else {
+        Py_ssize_t copied = start_len;
+        while (copied < end_len) {
+            Py_ssize_t bytes_to_copy = Py_MIN(copied, end_len - copied);
+            memcpy(buffer + copied, buffer, bytes_to_copy);
+            copied += bytes_to_copy;
+        }
+    }
+}
+
+/** Helper function to implement the repeat method on a buffer
+ *
+ * len_dest is assumed to be an integer multiple of len_src.
+ *
+ * This method repeately doubles the number of bytes copied to reduce
+ * the number of invocations of memcpy.
+ */
+void
+_PyBytes_Repeat(char* dest, Py_ssize_t len_dest,
+    const char* src, Py_ssize_t len_src)
+{
+    if (len_dest > 0) {
+        memcpy(dest, src, len_src);
+        _PyBytes_RepeatInPlace(dest, len_src, len_dest);
+    }
+}
