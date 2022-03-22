@@ -760,7 +760,7 @@ list_inplace_repeat(PyListObject *self, Py_ssize_t n)
     p = size;
     items = self->ob_item;
     for (j = 0; j < size; j++) {
-        Py_INCREF_n(items[j], n);
+        Py_INCREF_n(items[j], n-1);
     }
     for (i = 1; i < n; i++) { /* Start counting at 1, not 0 */
         for (j = 0; j < size; j++) {
