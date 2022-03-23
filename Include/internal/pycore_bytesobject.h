@@ -35,19 +35,10 @@ _PyBytes_ReverseFind(const char *haystack, Py_ssize_t len_haystack,
                      Py_ssize_t offset);
 
 
-/** Helper function to implement the inplace repeat method on a buffer
- *
- * len_dest is assumed to be an integer multiple of len_src.
- *
- * This method repeately doubles the number of bytes copied to reduce
- * the number of invocations of memcpy
- */
-PyAPI_FUNC(void)
-_PyBytes_RepeatInPlace(char* buffer, Py_ssize_t start_len, Py_ssize_t end_len);
-
 /** Helper function to implement the repeat method on a buffer
  *
  * len_dest is assumed to be an integer multiple of len_src.
+ * If src is zero, then assume the operation is inplace
  *
  * This method repeately doubles the number of bytes copied to reduce
  * the number of invocations of memcpy.

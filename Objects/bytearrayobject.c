@@ -353,7 +353,7 @@ bytearray_irepeat(PyByteArrayObject *self, Py_ssize_t count)
         return NULL;
 
     char* buf = PyByteArray_AS_STRING(self);
-    _PyBytes_RepeatInPlace(buf, mysize, size);
+    _PyBytes_Repeat(buf, size, 0, mysize);
 
     Py_INCREF(self);
     return (PyObject *)self;

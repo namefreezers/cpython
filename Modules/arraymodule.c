@@ -911,7 +911,7 @@ static PyObject *
 array_repeat(arrayobject *a, Py_ssize_t n)
 {
     array_state *state = find_array_state_by_type(Py_TYPE(a));
-     
+
     if (n < 0)
         n = 0;
     const Py_ssize_t array_length = Py_SIZE(a);
@@ -1082,7 +1082,7 @@ array_inplace_repeat(arrayobject *self, Py_ssize_t n)
         if (array_resize(self, n * array_size) == -1)
             return NULL;
 
-        _PyBytes_RepeatInPlace(self->ob_item, size, n * size);
+        _PyBytes_Repeat(self->ob_item, n*size, 0, size);
     }
     Py_INCREF(self);
     return (PyObject *)self;
