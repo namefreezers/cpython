@@ -4243,7 +4243,6 @@ starunpack_helper(struct compiler *c, asdl_expr_seq *elts, int pushed,
                   int build, int add, int extend, int tuple)
 {
     Py_ssize_t n = asdl_seq_LEN(elts);
-    //printf("starunpack_helper: n %d pushed %d tuple %d\n", (int)n, pushed, tuple);
     if (n > 2 && are_all_items_const(elts, 0, n)) {
         PyObject *folded = PyTuple_New(n);
         if (folded == NULL) {
@@ -4274,12 +4273,8 @@ starunpack_helper(struct compiler *c, asdl_expr_seq *elts, int pushed,
                 if (tuple) {
                     ADDOP(c, LIST_TO_TUPLE);
                 }
-                //fflush(stdout);
-                //ADDOP(c, LIST_TO_TUPLE);
-                //ADDOP(c, TUPLE_TO_LIST);
             }
             else {
-                // build a new list
                 //printf("build list specialized: %d\n", ( int)(n));
 
                 ADDOP_LOAD_CONST_NEW(c, folded);
