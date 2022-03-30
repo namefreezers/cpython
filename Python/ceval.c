@@ -3206,7 +3206,16 @@ handle_eval_breaker:
             PUSH(tuple);
             DISPATCH();
         }
-
+        TARGET(TUPLE_TO_LIST) {
+            PyObject* tuple = POP();
+            PyObject* list = PyTuple_AsList(tuple);
+            Py_DECREF(tuple);
+            if (list == NULL) {
+                goto error;
+            }
+            PUSH(list);
+            DISPATCH();
+        }
         TARGET(LIST_EXTEND) {
             PyObject *iterable = POP();
             PyObject *list = PEEK(oparg);
@@ -5444,6 +5453,7 @@ handle_eval_breaker:
         TARGET(CACHE) {
             Py_UNREACHABLE();
         }
+
 
 #if USE_COMPUTED_GOTOS
         TARGET_DO_TRACING:

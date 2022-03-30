@@ -1098,6 +1098,7 @@ stack_effect(int opcode, int oparg, int jump)
         case LOAD_ASSERTION_ERROR:
             return 1;
         case LIST_TO_TUPLE:
+        case TUPLE_TO_LIST:
             return 0;
         case LIST_EXTEND:
         case SET_UPDATE:
@@ -4242,6 +4243,7 @@ starunpack_helper(struct compiler *c, asdl_expr_seq *elts, int pushed,
                   int build, int add, int extend, int tuple)
 {
     Py_ssize_t n = asdl_seq_LEN(elts);
+    //printf("starunpack_helper: n %d pushed %d tuple %d\n", (int)n, pushed, tuple);
     if (n > 2 && are_all_items_const(elts, 0, n)) {
         PyObject *folded = PyTuple_New(n);
         if (folded == NULL) {
@@ -4262,11 +4264,31 @@ starunpack_helper(struct compiler *c, asdl_expr_seq *elts, int pushed,
                     return 0;
                 }
             }
-            ADDOP_I(c, build, pushed);
-            ADDOP_LOAD_CONST_NEW(c, folded);
-            ADDOP_I(c, extend, 1);
-            if (tuple) {
-                ADDOP(c, LIST_TO_TUPLE);
+
+            if (pushed || build!=BUILD_LIST) {
+                // extend list from stack
+                ADDOP_I(c, build, pushed);
+                ADDOP_LOAD_CONST_NEW(c, folded);
+                ADDOP_I(c, extend, 1);
+
+                if (tuple) {
+                    ADDOP(c, LIST_TO_TUPLE);
+                }
+                //fflush(stdout);
+                //ADDOP(c, LIST_TO_TUPLE);
+                //ADDOP(c, TUPLE_TO_LIST);
+            }
+            else {
+                // build a new list
+                //printf("build list specialized: %d\n", ( int)(n));
+
+                ADDOP_LOAD_CONST_NEW(c, folded);
+                if (tuple) {
+                }
+                else {
+                    ADDOP(c, TUPLE_TO_LIST);
+                }
+
             }
         }
         return 1;
@@ -4387,8 +4409,9 @@ compiler_tuple(struct compiler *c, expr_ty e)
         return starunpack_helper(c, elts, 0, BUILD_LIST,
                                  LIST_APPEND, LIST_EXTEND, 1);
     }
-    else
+    else {
         VISIT_SEQ(c, expr, elts);
+    }
     return 1;
 }
 
@@ -4936,7 +4959,6 @@ compiler_call_helper(struct compiler *c,
                      asdl_keyword_seq *keywords)
 {
     Py_ssize_t i, nseen, nelts, nkwelts;
-
     if (validate_keywords(c, keywords) == -1) {
         return 0;
     }

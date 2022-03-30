@@ -2607,6 +2607,27 @@ PyList_Reverse(PyObject *v)
     return 0;
 }
 
+PyObject*
+_PyList_FromArray(PyObject* const* src, Py_ssize_t n)
+{
+    if (n == 0) {
+        //return tuple_get_empty();
+    }
+
+    PyListObject* list = (PyListObject*)list_new_prealloc(n);
+    if (list == NULL) {
+        return NULL;
+    }
+    PyObject** dst = list->ob_item;
+    for (Py_ssize_t i = 0; i < n; i++) {
+        PyObject* item = src[i];
+        Py_INCREF(item);
+        dst[i] = item;
+    }
+    Py_SET_SIZE(list, n);
+    return (PyObject*)list;
+}
+
 PyObject *
 PyList_AsTuple(PyObject *v)
 {
@@ -2615,6 +2636,17 @@ PyList_AsTuple(PyObject *v)
         return NULL;
     }
     return _PyTuple_FromArray(((PyListObject *)v)->ob_item, Py_SIZE(v));
+}
+
+PyObject*
+PyTuple_AsList(PyObject* v)
+{
+    //printf("PyTuple_AsList: size %d\n", (int)Py_SIZE(v));
+    if (v == NULL || !PyTuple_Check(v)) {
+        PyErr_BadInternalCall();
+        return NULL;
+    }
+    return _PyList_FromArray(((PyTupleObject*)v)->ob_item, Py_SIZE(v));
 }
 
 /*[clinic input]
