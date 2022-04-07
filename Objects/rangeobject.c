@@ -768,13 +768,17 @@ typedef struct {
     // current and end both point into, or just beyond, the small int cache.
     PyLongObject *next;
     PyLongObject *stop;
+    long step;
 } smallrangeiterobject;
 
 static PyObject *
 smallrangeiter_next(smallrangeiterobject *r)
 {
+    //printf("smallrangeiter_next\n");
     if (r->next < r->stop) {
-        return Py_NewRef(r->next++);
+        PyObject *n = Py_NewRef(r->next);
+        r->next+=r->step;
+        return n;
     }
     return NULL;
 }
@@ -782,7 +786,7 @@ smallrangeiter_next(smallrangeiterobject *r)
 static PyObject *
 smallrangeiter_len(smallrangeiterobject *r)
 {
-    return PyLong_FromLong((long)(r->stop - r->next));
+    return PyLong_FromLong((long)( (r->stop - r->next)/r->step) );
 }
 
 static PyObject *
@@ -791,7 +795,7 @@ smallrangeiter_reduce(smallrangeiterobject *r)
     /* create a range object for pickling */
     PyObject *start = (PyObject *)Py_NewRef(r->next);
     PyObject *stop = (PyObject *)Py_NewRef(r->stop);
-    PyObject *step = Py_NewRef(_PyLong_GetOne());
+    PyObject *step = Py_NewRef(PyLong_FromLong((long)r->step));
     PyObject *range = (PyObject*)make_range_object(&PyRange_Type,
                                                    start, stop, step);
     if (range == NULL) {
@@ -817,11 +821,11 @@ smallrangeiter_setstate(smallrangeiterobject *r, PyObject *state)
     if (index < 0) {
         index = 0;
     }
-    else if (index > (long)(r->stop - r->next)) {
+    else if (index > r->step*(long)(r->stop - r->next)) {
         r->next = r->stop;
     }
     else {
-        r->next = r->next + index;
+        r->next = r->next + r->step*index;
     }
     Py_RETURN_NONE;
 }
@@ -1001,13 +1005,15 @@ get_len_of_range(long lo, long hi, long step)
 static PyObject *
 fast_range_iter(long start, long stop, long step, long len)
 {
-    if (step == 1 && -_PY_NSMALLNEGINTS <= start &&
+    if ( step>=1 && -_PY_NSMALLNEGINTS <= start &&
         start <= stop && stop <= _PY_NSMALLPOSINTS)
     {
+        //printf("create smallrangeiterobject: start %ld, stop %ld, step %ld\n", start, stop, step);
         smallrangeiterobject *it;
         it = PyObject_New(smallrangeiterobject, &PySmallRangeIter_Type);
         it->next = &_PyLong_SMALL_INTS[_PY_NSMALLNEGINTS + start];
         it->stop = &_PyLong_SMALL_INTS[_PY_NSMALLNEGINTS + stop];
+        it->step = step;
         return (PyObject *)it;
     }
     else {
