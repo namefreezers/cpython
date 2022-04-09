@@ -2106,8 +2106,8 @@ handle_eval_breaker:
             assert(cframe.use_tracing == 0);
             PyObject *sub = TOP();
             PyObject *list = SECOND();
-            DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
-            DEOPT_IF(!PyList_CheckExact(list), BINARY_SUBSCR);
+            assert(PyLong_CheckExact(sub));
+            assert(PyList_CheckExact(list));
 
             // Deopt unless 0 <= sub < PyList_Size(list)
             Py_ssize_t signed_magnitude = Py_SIZE(sub);
@@ -2131,8 +2131,8 @@ handle_eval_breaker:
             assert(cframe.use_tracing == 0);
             PyObject *sub = TOP();
             PyObject *tuple = SECOND();
-            DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
-            DEOPT_IF(!PyTuple_CheckExact(tuple), BINARY_SUBSCR);
+            assert(PyLong_CheckExact(sub));
+            assert(PyTuple_CheckExact(tuple));
 
             // Deopt unless 0 <= sub < PyTuple_Size(list)
             Py_ssize_t signed_magnitude = Py_SIZE(sub);
@@ -2155,7 +2155,7 @@ handle_eval_breaker:
         TARGET(BINARY_SUBSCR_DICT) {
             assert(cframe.use_tracing == 0);
             PyObject *dict = SECOND();
-            DEOPT_IF(!PyDict_CheckExact(SECOND()), BINARY_SUBSCR);
+            assert(PyDict_CheckExact(SECOND()));
             STAT_INC(BINARY_SUBSCR, hit);
             PyObject *sub = TOP();
             PyObject *res = PyDict_GetItemWithError(dict, sub);
