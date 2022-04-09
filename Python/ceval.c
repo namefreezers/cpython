@@ -2119,11 +2119,7 @@ handle_eval_breaker:
             DEOPT_IF(index >= Py_SIZE(sequence), BINARY_SUBSCR);
             STAT_INC(BINARY_SUBSCR, hit);
 
-            PyObject* res;
-            if (is_list)
-              res = PyList_GET_ITEM(sequence, index);
-            else
-               res = PyTuple_GET_ITEM(sequence, index);
+            PyObject* res = PyList_GET_ITEM(sequence, index);
             assert(res != NULL);
             Py_INCREF(res);
             STACK_SHRINK(1);
