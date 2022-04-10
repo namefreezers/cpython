@@ -2104,10 +2104,14 @@ handle_eval_breaker:
 
         TARGET(BINARY_SUBSCR_LIST_INT) {
             assert(cframe.use_tracing == 0);
+            PyObject* list =  SECOND();
             PyObject *sub = TOP();
-            PyObject *list = SECOND();
+
             DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
             DEOPT_IF(!PyList_CheckExact(list), BINARY_SUBSCR);
+
+
+
 
             // Deopt unless 0 <= sub < PyList_Size(list)
             Py_ssize_t signed_magnitude = Py_SIZE(sub);
@@ -2115,6 +2119,24 @@ handle_eval_breaker:
             assert(((PyLongObject *)_PyLong_GetZero())->ob_digit[0] == 0);
             Py_ssize_t index = ((PyLongObject*)sub)->ob_digit[0];
             DEOPT_IF(index >= PyList_GET_SIZE(list), BINARY_SUBSCR);
+
+            {
+                printf("\nlist pointer %p index %ld\n", list, (long)index);
+                PyObject** x = ((PyListObject*)(list))->ob_item;
+                PyObject** xt = ((PyTupleObject*)(list))->ob_item;
+                printf(" ob_item %p %p %p xt %p\n", x, x[0], x[1], xt);
+                printf(" ob_item delta %ld\n", (long)(x[1] - x[0]));
+                for (int ix = 0; ix < 2; ix++) {
+                    if (ix >= PyList_GET_SIZE(list))
+                        break;
+
+                     PyObject* res0 = PyList_GET_ITEM(list, ix);
+                    printf("ix %d: res0 %p\n", ix, res0);
+                    res0 = PyTuple_GET_ITEM(list, ix);
+                    printf("ix tuple %d: res0 %p\n", ix, res0);
+                }
+            }
+
             STAT_INC(BINARY_SUBSCR, hit);
             PyObject *res = PyList_GET_ITEM(list, index);
             assert(res != NULL);
@@ -2131,6 +2153,9 @@ handle_eval_breaker:
             assert(cframe.use_tracing == 0);
             PyObject *sub = TOP();
             PyObject *tuple = SECOND();
+
+            PyObject* list = tuple;
+
             DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
             DEOPT_IF(!PyTuple_CheckExact(tuple), BINARY_SUBSCR);
 
@@ -2140,6 +2165,23 @@ handle_eval_breaker:
             assert(((PyLongObject *)_PyLong_GetZero())->ob_digit[0] == 0);
             Py_ssize_t index = ((PyLongObject*)sub)->ob_digit[0];
             DEOPT_IF(index >= PyTuple_GET_SIZE(tuple), BINARY_SUBSCR);
+
+            {
+                printf("\ntuple pointer %p: index %ld\n", list, (long)index);
+                PyObject** x = ((PyListObject*)(list))->ob_item;
+                PyObject** xt = ((PyTupleObject*)(list))->ob_item;
+                printf(" ob_item %p %p %p xt %p\n", x, x[0], x[1], xt);
+                printf(" ob_item delta %ld\n", (long)(x[1] - x[0]));
+                for (int ix = 0; ix < 2; ix++) {
+                    if (ix >= PyTuple_GET_SIZE(tuple))
+                        break;
+                    PyObject* res0 = PyList_GET_ITEM(list, ix);
+                    printf("ix %d: res0 %p\n", ix, res0);
+                    res0 = PyTuple_GET_ITEM(list, ix);
+                    printf("ix tuple %d: res0 %p\n", ix, res0);
+                }
+            }
+
             STAT_INC(BINARY_SUBSCR, hit);
             PyObject *res = PyTuple_GET_ITEM(tuple, index);
             assert(res != NULL);
