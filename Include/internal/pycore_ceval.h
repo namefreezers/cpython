@@ -133,6 +133,8 @@ extern struct _PyInterpreterFrame* _PyEval_GetFrame(void);
 
 extern PyObject* _Py_MakeCoro(PyFunctionObject *func);
 
+int print_enabled();
+
 #ifdef __cplusplus
 }
 #endif

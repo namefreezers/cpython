@@ -1231,11 +1231,17 @@ _Py_Specialize_BinarySubscr(
     SPECIALIZATION_FAIL(BINARY_SUBSCR,
                         binary_subscr_fail_kind(container_type, sub));
 fail:
+    if (print_enabled()) {
+        printf("_Py_Specialize_BinarySubscr: fail\n");
+    }
     STAT_INC(BINARY_SUBSCR, failure);
     assert(!PyErr_Occurred());
     cache->counter = ADAPTIVE_CACHE_BACKOFF;
     return 0;
 success:
+    if (print_enabled()) {
+        printf("_Py_Specialize_BinarySubscr: success\n");
+    }
     STAT_INC(BINARY_SUBSCR, success);
     assert(!PyErr_Occurred());
     cache->counter = initial_counter_value();

@@ -1579,6 +1579,11 @@ is_method(PyObject **stack_pointer, int args) {
 #define KWNAMES_LEN() \
     (call_shape.kwnames == NULL ? 0 : ((int)PyTuple_GET_SIZE(call_shape.kwnames)))
 
+int do_print = 0;
+
+int print_enabled() {
+    return do_print;
+}
 PyObject* _Py_HOT_FUNCTION
 _PyEval_EvalFrameDefault(PyThreadState *tstate, _PyInterpreterFrame *frame, int throwflag)
 {
@@ -2103,6 +2108,9 @@ handle_eval_breaker:
         }
 
         TARGET(BINARY_SUBSCR_LIST_INT) {
+            if (do_print)
+                printf("TARGET(BINARY_SUBSCR_LIST_INT) : enter\n");
+
             assert(cframe.use_tracing == 0);
             PyObject *sub = TOP();
             PyObject *list = SECOND();
@@ -2115,6 +2123,10 @@ handle_eval_breaker:
             assert(((PyLongObject *)_PyLong_GetZero())->ob_digit[0] == 0);
             Py_ssize_t index = ((PyLongObject*)sub)->ob_digit[0];
             DEOPT_IF(index >= PyList_GET_SIZE(list), BINARY_SUBSCR);
+
+            if (do_print)
+                printf("TARGET(BINARY_SUBSCR_LIST_INT) : hit, index %ld\n", (long) index);
+
             STAT_INC(BINARY_SUBSCR, hit);
             PyObject *res = PyList_GET_ITEM(list, index);
             assert(res != NULL);
@@ -2129,6 +2141,9 @@ handle_eval_breaker:
 
         TARGET(BINARY_SUBSCR_TUPLE_INT) {
             assert(cframe.use_tracing == 0);
+            if (do_print)
+                printf("TARGET(BINARY_SUBSCR_TUPLE_INT) : enter\n");
+
             PyObject *sub = TOP();
             PyObject *tuple = SECOND();
             assert(PyLong_CheckExact(sub));
@@ -2140,6 +2155,15 @@ handle_eval_breaker:
             assert(((PyLongObject *)_PyLong_GetZero())->ob_digit[0] == 0);
             Py_ssize_t index = ((PyLongObject*)sub)->ob_digit[0];
             DEOPT_IF(index >= PyTuple_GET_SIZE(tuple), BINARY_SUBSCR);
+
+            if (do_print == 0) {
+                printf("enable doprint!\n");
+                do_print = 1;
+            }
+
+            if (do_print)
+                printf("TARGET(BINARY_SUBSCR_TUPLE_INT) : hit, index %ld\n", (long)index);
+
             STAT_INC(BINARY_SUBSCR, hit);
             PyObject *res = PyTuple_GET_ITEM(tuple, index);
             assert(res != NULL);
@@ -5398,10 +5422,15 @@ handle_eval_breaker:
                 PyObject *lhs = SECOND();
                 PyObject *rhs = TOP();
                 next_instr--;
+                if (do_print)
+                    printf("TARGET(BINARY_OP_ADAPTIVE) : call to _Py_Specialize_BinaryOp\n");
+
                 _Py_Specialize_BinaryOp(lhs, rhs, next_instr, oparg, &GETLOCAL(0));
                 DISPATCH();
             }
             else {
+                if (do_print)
+                    printf("TARGET(BINARY_OP_ADAPTIVE) : deferred, jump to BINARY_OP\n");
                 STAT_INC(BINARY_OP, deferred);
                 cache->counter--;
                 JUMP_TO_INSTRUCTION(BINARY_OP);
@@ -5507,6 +5536,14 @@ handle_eval_breaker:
 
 miss:
     {
+            if (opcode == BINARY_SUBSCR_TUPLE_INT) {
+                do_print = 1;
+
+                printf("do_print: enable!\n");
+            }
+
+        if (do_print)
+                printf("miss: opcode %d, counter %d\n", opcode, *( (_Py_CODEUNIT*)next_instr ) );
         STAT_INC(opcode, miss);
         opcode = _PyOpcode_Deopt[opcode];
         STAT_INC(opcode, miss);
