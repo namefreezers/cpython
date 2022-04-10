@@ -2106,8 +2106,7 @@ handle_eval_breaker:
             assert(cframe.use_tracing == 0);
             PyObject *sub = TOP();
             PyObject *list = SECOND();
-            DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
-            DEOPT_IF(!PyList_CheckExact(list), BINARY_SUBSCR);
+            DEOPT_IF(!PyLong_CheckExact(sub) || !PyList_CheckExact(list), BINARY_SUBSCR);
 
             // Deopt unless 0 <= sub < PyList_Size(list)
             Py_ssize_t signed_magnitude = Py_SIZE(sub);
