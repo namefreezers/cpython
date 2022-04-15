@@ -1634,6 +1634,8 @@ _PyEval_EvalFrameDefault(PyThreadState *tstate, _PyInterpreterFrame *frame, int 
     _Py_CODEUNIT *first_instr;
     _Py_CODEUNIT *next_instr;
     PyObject **stack_pointer;
+    PyObject** array; // used in BINARY_SUBSCR_TUPLE_INT
+    PyObject *sequence ; // used in BINARY_SUBSCR_TUPLE_INT
 
 /* Sets the above local variables from the frame */
 #define SET_LOCALS_FROM_FRAME() \
@@ -2085,7 +2087,6 @@ handle_eval_breaker:
         }
 
         TARGET(BINARY_SUBSCR_ADAPTIVE) {
-            printf("TARGET(BINARY_SUBSCR_ADAPTIVE\n" );
             _PyBinarySubscrCache *cache = (_PyBinarySubscrCache *)next_instr;
             if (cache->counter == 0) {
                 PyObject *sub = TOP();
@@ -2104,48 +2105,25 @@ handle_eval_breaker:
         }
 
         TARGET(BINARY_SUBSCR_LIST_INT) {
-            printf("TARGET(BINARY_SUBSCR_LIST_INT\n");
             assert(cframe.use_tracing == 0);
-            PyObject** array;
-            PyObject *sub = TOP();
-            PyObject * sequence = SECOND();
-            DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
+            sequence = SECOND();
             DEOPT_IF(!PyList_CheckExact(sequence), BINARY_SUBSCR);
             array = &PyList_GET_ITEM(sequence, 0);
 
-        {
-            // Deopt unless 0 <= sub < PyTuple_Size(list)
-            Py_ssize_t signed_magnitude = Py_SIZE(sub);
-            DEOPT_IF(((size_t)signed_magnitude) > 1, BINARY_SUBSCR);
-            assert(((PyLongObject*)_PyLong_GetZero())->ob_digit[0] == 0);
-            Py_ssize_t index = ((PyLongObject*)sub)->ob_digit[0];
-            DEOPT_IF(index >= Py_SIZE(sequence), BINARY_SUBSCR);
-            STAT_INC(BINARY_SUBSCR, hit);
-            printf("TARGET(BINARY_SUBSCR_LIST_INT): hit\n");
+            goto binary_subscr_list_tuple_shared;
 
-            PyObject* res = array[index];
-            assert(res != NULL);
-            //goto binary_subscr_list_tuple_shared;
-            Py_INCREF(res);
-            STACK_SHRINK(1);
-            Py_DECREF(sub);
-            SET_TOP(res);
-            Py_DECREF(sequence);
-            JUMPBY(INLINE_CACHE_ENTRIES_BINARY_SUBSCR);
-            NOTRACE_DISPATCH();
-        }
         }
 
         TARGET(BINARY_SUBSCR_TUPLE_INT) {
-            printf("TARGET(BINARY_SUBSCR_TUPLE_INT)\n");
             assert(cframe.use_tracing == 0);
-            PyObject** array;
-            PyObject *sub = TOP();
-            PyObject *sequence = SECOND();
-            DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
+            sequence = SECOND();
             DEOPT_IF(!PyTuple_CheckExact(sequence), BINARY_SUBSCR);
             array = &PyTuple_GET_ITEM(sequence, 0);
 
+        binary_subscr_list_tuple_shared:
+        {
+            PyObject *sub = TOP();
+            DEOPT_IF(!PyLong_CheckExact(sub), BINARY_SUBSCR);
             // Deopt unless 0 <= sub < PyTuple_Size(list)
             Py_ssize_t signed_magnitude = Py_SIZE(sub);
             DEOPT_IF(((size_t)signed_magnitude) > 1, BINARY_SUBSCR);
@@ -2153,11 +2131,8 @@ handle_eval_breaker:
             Py_ssize_t index = ((PyLongObject*)sub)->ob_digit[0];
             DEOPT_IF(index >= Py_SIZE(sequence), BINARY_SUBSCR);
             STAT_INC(BINARY_SUBSCR, hit);
-            printf("TARGET(BINARY_SUBSCR_TUPLE_INT): hit\n");
             PyObject* res = array[index];
             assert(res != NULL);
-        binary_subscr_list_tuple_shared:
-        {
             Py_INCREF(res);
             STACK_SHRINK(1);
             Py_DECREF(sub);
