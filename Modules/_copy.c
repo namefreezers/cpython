@@ -13,7 +13,6 @@ module _copy
  * public API (e.g. PyObject_Id, maybe just a macro to avoid extra
  * indirection) providing this..
  */
-
 static PyObject*
 object_id(PyObject* v)
 {
