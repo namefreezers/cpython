@@ -1337,7 +1337,7 @@ class PyBuildExt(build_ext):
         self.addext(Extension('_uuid', ['_uuidmodule.c']))
 
     def detect_copy(self):
-        # Build the _uuid module if possible
+        # Build the _copy module
         self.addext(Extension('_copy', ['_copy.c']))
 
     def detect_modules(self):
