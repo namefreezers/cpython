@@ -1,0 +1,1 @@
+Improve performance of ``deepcopy`` by implementing part of the method in C. Original code by Rasmus Villemoes, PR created by Pieter Eendebak
