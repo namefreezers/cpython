@@ -13,6 +13,7 @@ module _copy
  * public API (e.g. PyObject_Id, maybe just a macro to avoid extra
  * indirection) providing this..
  */
+
 static PyObject*
 object_id(PyObject* v)
 {
@@ -357,7 +358,7 @@ static PyObject* do_deepcopy(PyObject* x, PyObject* memo)
  * will then call back to us.
  */
 
- /*[clinic input]
+/*[clinic input]
  _copy.deepcopy
 
    x: object
@@ -368,11 +369,11 @@ static PyObject* do_deepcopy(PyObject* x, PyObject* memo)
 
  See the documentation for the copy module for details.
 
- [clinic start generated code]*/
+[clinic start generated code]*/
 
-static PyObject*
-_copy_deepcopy_impl(PyObject* module, PyObject* x, PyObject* memo)
-/*[clinic end generated code: output=825a9c8dd4bfc002 input=24ec531bf0923156]*/
+static PyObject *
+_copy_deepcopy_impl(PyObject *module, PyObject *x, PyObject *memo)
+/*[clinic end generated code: output=825a9c8dd4bfc002 input=519bbb0201ae2a5c]*/
 {
     PyObject* result;
 
