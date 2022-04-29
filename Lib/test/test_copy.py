@@ -7,6 +7,7 @@ import abc
 from operator import le, lt, ge, gt, eq, ne
 
 import unittest
+import unittest.mock
 from test import support
 
 order_comparisons = le, lt, ge, gt
@@ -51,6 +52,8 @@ class TestCopy(unittest.TestCase):
         self.assertRaises(TypeError, copy.copy, x)
         copyreg.pickle(C, pickle_C, C)
         y = copy.copy(x)
+        self.assertIsInstance(y, C)
+        self.assertEqual(y.foo, x.foo)
 
     def test_copy_reduce_ex(self):
         class C(object):
@@ -313,6 +316,8 @@ class TestCopy(unittest.TestCase):
         self.assertRaises(TypeError, copy.deepcopy, x)
         copyreg.pickle(C, pickle_C, C)
         y = copy.deepcopy(x)
+        self.assertIsInstance(y, C)
+        self.assertEqual(y.foo, x.foo)
 
     def test_deepcopy_reduce_ex(self):
         class C(object):
@@ -874,6 +879,10 @@ class TestCopy(unittest.TestCase):
         self.assertIs(g.b.__self__, g)
         g.b()
 
+    def test_deepcopy_standard_types_no_fallback(self):
+        with unittest.mock.patch('copy._deepcopy_fallback') as _deepcopy_fallback_mock:
+            x=copy.deepcopy({'str': 's', 'int': 0, 'list': [1,(1,2)]})
+        _deepcopy_fallback_mock.assert_not_called()
 
 def global_foo(x, y): return x+y
 
