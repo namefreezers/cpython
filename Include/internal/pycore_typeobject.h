@@ -43,6 +43,10 @@ extern PyStatus _PyTypes_InitSlotDefs(void);
 
 extern void _PyStaticType_Dealloc(PyTypeObject *type);
 
+PyObject *
+type_getattro(PyTypeObject *type, PyObject *name);
+PyObject *
+_type_getattro(PyTypeObject *type, PyObject *name, int supress);
 
 #ifdef __cplusplus
 }
