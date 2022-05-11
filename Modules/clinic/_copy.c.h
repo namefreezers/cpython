@@ -11,7 +11,7 @@ PyDoc_STRVAR(_copy_deepcopy__doc__,
 "See the documentation for the copy module for details.");
 
 #define _COPY_DEEPCOPY_METHODDEF    \
-    {"deepcopy", (PyCFunction)(void(*)(void))_copy_deepcopy, METH_FASTCALL, _copy_deepcopy__doc__},
+    {"deepcopy", _PyCFunction_CAST(_copy_deepcopy), METH_FASTCALL, _copy_deepcopy__doc__},
 
 static PyObject *
 _copy_deepcopy_impl(PyObject *module, PyObject *x, PyObject *memo);
@@ -37,4 +37,4 @@ skip_optional:
 exit:
     return return_value;
 }
-/*[clinic end generated code: output=05aaeb3bc7736b2c input=a9049054013a1b77]*/
+/*[clinic end generated code: output=c1d30b4875fef931 input=a9049054013a1b77]*/
