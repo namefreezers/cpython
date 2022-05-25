@@ -560,14 +560,8 @@ _PyLong_AsInt(PyObject *obj)
 
 /* Get a Py_ssize_t from an int object.
    Returns -1 and sets an error condition if overflow occurs. */
-
 Py_ssize_t
-PyLong_AsSsize_t(PyObject *vv) {
-    PyLongObject *v;
-    size_t x, prev;
-    Py_ssize_t i;
-    int sign;
-
+PyLong_AsSsize_t(PyObject* vv) {
     if (vv == NULL) {
         PyErr_BadInternalCall();
         return -1;
@@ -576,6 +570,21 @@ PyLong_AsSsize_t(PyObject *vv) {
         PyErr_SetString(PyExc_TypeError, "an integer is required");
         return -1;
     }
+
+    return _PyLong_AsSsize_t_NoCheck(vv);
+}
+
+Py_ssize_t
+PyLong_AsSsize_t_NoCheck(PyObject* vv) {
+    return _PyLong_AsSsize_t_NoCheck(vv);
+}
+
+inline Py_ssize_t _PyLong_AsSsize_t_NoCheck(PyObject * vv) {
+
+    PyLongObject *v;
+    size_t x, prev;
+    Py_ssize_t i;
+    int sign;
 
     v = (PyLongObject *)vv;
     i = Py_SIZE(v);

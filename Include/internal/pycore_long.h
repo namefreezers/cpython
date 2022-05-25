@@ -73,6 +73,8 @@ PyAPI_FUNC(char*) _PyLong_FormatBytesWriter(
     int base,
     int alternate);
 
+PyAPI_FUNC(Py_ssize_t) PyLong_AsSsize_t_NoCheck(PyObject*);
+
 #ifdef __cplusplus
 }
 #endif

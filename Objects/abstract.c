@@ -1472,8 +1472,9 @@ PyNumber_AsSsize_t(PyObject *item, PyObject *err)
     if (value == NULL)
         return -1;
 
+    assert(PyLong_Check(vv));
     /* We're done if PyLong_AsSsize_t() returns without error. */
-    result = PyLong_AsSsize_t(value);
+    result = PyLong_AsSsize_t_NoCheck(value);
     if (result != -1)
         goto finish;
 
