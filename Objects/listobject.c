@@ -2923,6 +2923,7 @@ list_subscript(PyListObject* self, PyObject* item)
     if (_PyIndex_Check(item)) {
         Py_ssize_t i;
         i = PyNumber_AsSsize_t(item, PyExc_IndexError);
+        //printf("list_subscript %ld\n", i);
         if (i == -1 && PyErr_Occurred())
             return NULL;
         if (i < 0)

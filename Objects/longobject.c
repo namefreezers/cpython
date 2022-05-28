@@ -617,9 +617,46 @@ PyLong_AsSsize_t(PyObject* vv) {
     return _PyLong_AsSsize_t_NoCheck(vv);
 }
 
-Py_ssize_t
-PyLong_AsSsize_t_NoCheck(PyObject* vv) {
-    return _PyLong_AsSsize_t_NoCheck(vv);
+Py_ssize_t PyLong_AsSsize_t_NoCheck(PyObject* vv) {
+    PyLongObject *v;
+    size_t x, prev;
+    Py_ssize_t i;
+    int sign;
+
+    v = (PyLongObject *)vv;
+    i = Py_SIZE(v);
+    switch (i) {
+    case -1: return -(sdigit)v->ob_digit[0];
+    case 0: return 0;
+    case 1: return v->ob_digit[0];
+    }
+    sign = 1;
+    x = 0;
+    if (i < 0) {
+        sign = -1;
+        i = -(i);
+    }
+    while (--i >= 0) {
+        prev = x;
+        x = (x << PyLong_SHIFT) | v->ob_digit[i];
+        if ((x >> PyLong_SHIFT) != prev)
+            goto overflow;
+    }
+    /* Haven't lost any bits, but casting to a signed type requires
+     * extra care (see comment above).
+     */
+    if (x <= (size_t)PY_SSIZE_T_MAX) {
+        return (Py_ssize_t)x * sign;
+    }
+    else if (sign < 0 && x == PY_ABS_SSIZE_T_MIN) {
+        return PY_SSIZE_T_MIN;
+    }
+    /* else overflow */
+
+  overflow:
+    PyErr_SetString(PyExc_OverflowError,
+                    "Python int too large to convert to C ssize_t");
+    return -1;
 }
 
 /* Get a C unsigned long int from an int object.

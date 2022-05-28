@@ -1469,6 +1469,20 @@ PyNumber_AsSsize_t(PyObject *item, PyObject *err)
 {
     Py_ssize_t result;
     PyObject *runerr;
+
+    // fast path for null and long items. it saves an increment/decrement pair + 2 checks in PyLong_AsSsize_t
+    // alternative is to use PyLong_CheckExact?
+    if (item == NULL) {
+        null_error();
+        return -1;
+    }
+    if (PyLong_Check(item)) {
+        result = PyLong_AsSsize_t_NoCheck(item);
+        if (result != -1)
+            return result;
+        // failed. pass on to slow path. we might make this a bit faster still
+    }
+
     PyObject *value = _PyNumber_Index(item);
     if (value == NULL)
         return -1;
