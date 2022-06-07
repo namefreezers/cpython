@@ -1,1 +1,2 @@
-Improve performance of ``deepcopy`` by implementing part of the method in C. Original code by Rasmus Villemoes, PR created by Pieter Eendebak
+Improve the performance of :func:`copy.deepcopy` by implementing part of the
+function in C. Patch by Rasmus Villemoes and Pieter Eendebak.
