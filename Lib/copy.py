@@ -184,6 +184,7 @@ try:
 except ImportError:
     # the fallback is for projects like PyPy that reuse the stdlib
     deepcopy = _deepcopy_fallback
+    deepcopy.__name__ = 'deepcopy'
 
 _deepcopy_dispatch = d = {}
 
