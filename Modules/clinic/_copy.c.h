@@ -31,11 +31,10 @@ _copy_deepcopy(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
         goto skip_optional;
     }
     memo = args[1];
-
 skip_optional:
     return_value = _copy_deepcopy_impl(module, x, memo);
 
 exit:
     return return_value;
 }
-/*[clinic end generated code: output=8da1d2b68931e737 input=a9049054013a1b77]*/
+/*[clinic end generated code: output=c1d30b4875fef931 input=a9049054013a1b77]*/
