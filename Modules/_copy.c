@@ -1,3 +1,5 @@
+#define NEEDS_PY_IDENTIFIER
+
 #include "Python.h"
 
 /*[clinic input]
@@ -258,6 +260,7 @@ deepcopy_tuple(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
     }
     return y;
 }
+
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof((a)[0]))
 
