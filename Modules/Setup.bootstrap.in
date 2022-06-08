@@ -25,6 +25,7 @@ _weakref _weakref.c
 
 # commonly used core modules
 _abc _abc.c
+_copy _copy.c
 _functools _functoolsmodule.c
 _locale _localemodule.c
 _operator _operator.c

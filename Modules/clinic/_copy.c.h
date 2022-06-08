@@ -31,6 +31,7 @@ _copy_deepcopy(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
         goto skip_optional;
     }
     memo = args[1];
+
 skip_optional:
     return_value = _copy_deepcopy_impl(module, x, memo);
 
