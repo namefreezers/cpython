@@ -929,6 +929,9 @@ class PyBuildExt(build_ext):
         # Context Variables
         self.addext(Extension('_contextvars', ['_contextvarsmodule.c']))
 
+        # C implementation of copy
+        self.addext(Extension('_copy', ['_copy.c']))
+
         # math library functions, e.g. sin()
         self.addext(Extension('math',  ['mathmodule.c']))
 
