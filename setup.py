@@ -1336,10 +1336,6 @@ class PyBuildExt(build_ext):
         # Build the _uuid module if possible
         self.addext(Extension('_uuid', ['_uuidmodule.c']))
 
-    def detect_copy(self):
-        # Build the _copy module
-        self.addext(Extension('_copy', ['_copy.c']))
-
     def detect_modules(self):
         # remove dummy extension
         self.extensions = []
@@ -1350,7 +1346,6 @@ class PyBuildExt(build_ext):
         self.detect_simple_extensions()
         self.detect_test_extensions()
         self.detect_readline_curses()
-        self.detect_copy()
         self.detect_crypt()
         self.detect_openssl_hashlib()
         self.detect_hash_builtins()
