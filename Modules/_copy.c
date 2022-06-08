@@ -10,18 +10,13 @@ module _copy
 [clinic start generated code]*/
 /*[clinic end generated code: output=da39a3ee5e6b4b0d input=b34c1b75f49dbfff]*/
 
-/*
- * Duplicate of builtin_id. Looking around the CPython code base, it seems to
- * be quite common to just open-code this as PyLong_FromVoidPtr, though I'm
- * not sure those cases actually need to interoperate with Python code that
- * uses id(). We do, however, so it would be nicer there was an official
- * public API (e.g. PyObject_Id, maybe just a macro to avoid extra
- * indirection) providing this..
- */
-static PyObject*
-object_id(PyObject* v)
+#define object_id PyLong_FromVoidPtr
+
+static struct PyModuleDef copy_moduledef;
+
+static void print_repr(PyObject *o)
 {
-    return PyLong_FromVoidPtr(v);
+    PyObject_Print(o, stdout, 0);
 }
 
 static int
@@ -61,13 +56,16 @@ static PyObject* do_deepcopy(PyObject* x, PyObject* memo);
 static PyObject*
 do_deepcopy_fallback(PyObject* x, PyObject* memo)
 {
-    static PyObject* copymodule;
+    PyObject * module = PyState_FindModule(&copy_moduledef);
+    PyObject** state_pointer = PyModule_GetState(module);
+    PyObject *copymodule = *state_pointer;
     _Py_IDENTIFIER(_deepcopy_fallback);
 
     if (copymodule == NULL) {
         copymodule = PyImport_ImportModule("copy");
         if (copymodule == NULL)
             return NULL;
+        *state_pointer = copymodule;
     }
 
     assert(copymodule != NULL);
@@ -408,11 +406,13 @@ static PyMethodDef functions[] = {
     {NULL, NULL}
 };
 
-static struct PyModuleDef moduledef = {
+const Py_ssize_t state_size = sizeof(PyObject *);
+
+static struct PyModuleDef copy_moduledef = {
     PyModuleDef_HEAD_INIT,
     "_copy",
     "C implementation of deepcopy",
-    -1,
+    state_size,
     functions,
     NULL,
     NULL,
@@ -423,10 +423,12 @@ static struct PyModuleDef moduledef = {
 PyMODINIT_FUNC
 PyInit__copy(void)
 {
-    PyObject* module = PyModule_Create(&moduledef);
+    PyObject* module = PyModule_Create(&copy_moduledef);
     if (module == NULL)
         return NULL;
 
+    PyObject** copymodule = PyModule_GetState(module);
+    *copymodule = NULL;
     return module;
 }
 
