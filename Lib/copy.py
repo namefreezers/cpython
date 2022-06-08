@@ -181,7 +181,7 @@ def _deepcopy_fallback(x, memo=None, _nil=[]):
 
 try:
     from _copy import deepcopy
-except ImportError as ex:
+except ImportError:
     # the fallback is for projects like PyPy that reuse the stdlib
     deepcopy = _deepcopy_fallback
 
