@@ -406,13 +406,12 @@ static PyMethodDef functions[] = {
     {NULL, NULL}
 };
 
-const Py_ssize_t state_size = sizeof(PyObject *);
 
 static struct PyModuleDef copy_moduledef = {
     PyModuleDef_HEAD_INIT,
     "_copy",
     "C implementation of deepcopy",
-    state_size,
+    sizeof(PyObject *),
     functions,
     NULL,
     NULL,
