@@ -51,7 +51,7 @@ memo_keepalive(PyObject* x, PyObject* memo)
 }
 
 /* Forward declaration. */
-static PyObject* do_deepcopy(PyObject* x, PyObject* memo);
+static PyObject* do_deepcopy(PyObject *module, PyObject* x, PyObject* memo);
 
 static PyObject*
 do_deepcopy_fallback(PyObject* x, PyObject* memo)
