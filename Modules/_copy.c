@@ -393,7 +393,7 @@ _copy_deepcopy_impl(PyObject *module, PyObject *x, PyObject *memo)
         Py_INCREF(memo);
     }
 
-    result = do_deepcopy(x, memo);
+    result = do_deepcopy(module, x, memo);
 
     Py_DECREF(memo);
     return result;
