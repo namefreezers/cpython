@@ -56,7 +56,6 @@ static PyObject* do_deepcopy(PyObject *module, PyObject* x, PyObject* memo);
 static PyObject*
 do_deepcopy_fallback(PyObject *module, PyObject* x, PyObject* memo)
 {
-    PyObject * module = PyState_FindModule(&copy_moduledef);
     PyObject** state_pointer = PyModule_GetState(module);
     PyObject *copymodule = *state_pointer;
     _Py_IDENTIFIER(_deepcopy_fallback);
