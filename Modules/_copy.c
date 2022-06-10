@@ -54,7 +54,7 @@ memo_keepalive(PyObject* x, PyObject* memo)
 static PyObject* do_deepcopy(PyObject *module, PyObject* x, PyObject* memo);
 
 static PyObject*
-do_deepcopy_fallback(PyObject* x, PyObject* memo)
+do_deepcopy_fallback(PyObject *module, PyObject* x, PyObject* memo)
 {
     PyObject * module = PyState_FindModule(&copy_moduledef);
     PyObject** state_pointer = PyModule_GetState(module);
