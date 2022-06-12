@@ -4,6 +4,8 @@
 #define NEEDS_PY_IDENTIFIER
 
 #include "Python.h"
+#include "pycore_moduleobject.h"  // _PyModule_GetState()
+#include "clinic/_copy.c.h"
 
 /*[clinic input]
 module _copy
@@ -13,6 +15,11 @@ module _copy
 #define object_id PyLong_FromVoidPtr
 
 static struct PyModuleDef copy_moduledef;
+
+typedef struct {
+    PyObject *python_copy_module;
+} copy_module_state;
+
 
 static void print_repr(PyObject *o)
 {
@@ -56,15 +63,15 @@ static PyObject* do_deepcopy(PyObject *module, PyObject* x, PyObject* memo);
 static PyObject*
 do_deepcopy_fallback(PyObject* module, PyObject* x, PyObject* memo)
 {
-    PyObject** state_pointer = PyModule_GetState(module);
-    PyObject *copymodule = *state_pointer;
+    copy_module_state *state = PyModule_GetState(module);
+    PyObject *copymodule = state->python_copy_module;
     _Py_IDENTIFIER(_deepcopy_fallback);
 
     if (copymodule == NULL) {
         copymodule = PyImport_ImportModule("copy");
         if (copymodule == NULL)
             return NULL;
-        *state_pointer = copymodule;
+        state->python_copy_module = copymodule;
     }
 
     assert(copymodule != NULL);
@@ -284,7 +291,7 @@ static PyTypeObject* const atomic_type[] = {
 
 struct deepcopy_dispatcher {
     PyTypeObject* type;
-    PyObject* (*handler)(PyObject* x, PyObject* memo,
+    PyObject* (*handler)(PyObject *module, PyObject* x, PyObject* memo,
         PyObject* id_x, Py_hash_t hash_id_x);
 };
 
@@ -337,7 +344,7 @@ static PyObject* do_deepcopy(PyObject *module, PyObject* x, PyObject* memo)
         if (Py_TYPE(x) != dd->type)
             continue;
 
-        y = dd->handler(x, memo, id_x, hash_id_x);
+        y = dd->handler(module, x, memo, id_x, hash_id_x);
         Py_DECREF(id_x);
         if (y == NULL)
             return NULL;
@@ -398,35 +405,47 @@ _copy_deepcopy_impl(PyObject *module, PyObject *x, PyObject *memo)
     return result;
 }
 
-#include "clinic/_copy.c.h"
-
-static PyMethodDef functions[] = {
+static PyMethodDef copy_functions[] = {
     _COPY_DEEPCOPY_METHODDEF
     {NULL, NULL}
 };
 
+static int
+copy_clear(PyObject *module)
+{
+    // should we cleanup the state->python_copy_module? maybe not, we only obtained a pointer and we don't want to unload the copy module itself
+
+    //math_module_state *state = get_math_module_state(module);
+    //PyObject *copymodule = state->python_copy_module;
+
+    return 0;
+}
+
+static void
+copy_free(void *module)
+{
+    copy_clear((PyObject *)module);
+}
 
 static struct PyModuleDef copy_moduledef = {
     PyModuleDef_HEAD_INIT,
-    "_copy",
-    "C implementation of deepcopy",
-    sizeof(PyObject *),
-    functions,
-    NULL,
-    NULL,
-    NULL,
-    NULL
+    .m_name = "_copy",
+    .m_doc = "C implementation of deepcopy",
+    .m_size = sizeof(copy_module_state),
+    .m_methods = copy_functions,
+    .m_clear = copy_clear,
+    .m_free = copy_free,
 };
+
 
 PyMODINIT_FUNC
 PyInit__copy(void)
 {
     PyObject* module = PyModule_Create(&copy_moduledef);
-    if (module == NULL)
-        return NULL;
 
-    PyObject** copymodule = PyModule_GetState(module);
-    *copymodule = NULL;
+    copy_module_state *state = _PyModule_GetState(module);
+    assert(state != NULL);
+    state->python_copy_module = NULL; // only import this if required
+
     return module;
 }
-
