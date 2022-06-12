@@ -54,7 +54,7 @@ memo_keepalive(PyObject* x, PyObject* memo)
 static PyObject* do_deepcopy(PyObject *module, PyObject* x, PyObject* memo);
 
 static PyObject*
-do_deepcopy_fallback(PyObject *module, PyObject* x, PyObject* memo)
+do_deepcopy_fallback(PyObject* module, PyObject* x, PyObject* memo)
 {
     PyObject** state_pointer = PyModule_GetState(module);
     PyObject *copymodule = *state_pointer;
@@ -74,7 +74,7 @@ do_deepcopy_fallback(PyObject *module, PyObject* x, PyObject* memo)
 }
 
 static PyObject*
-deepcopy_list(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
+deepcopy_list(PyObject* module, PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
 {
     PyObject* y, * elem;
     Py_ssize_t i, size;
@@ -104,7 +104,7 @@ deepcopy_list(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
     for (i = 0; i < PyList_GET_SIZE(y); ++i) {
         elem = PyList_GET_ITEM(y, i);
         Py_INCREF(elem);
-        Py_SETREF(elem, do_deepcopy(elem, memo));
+        Py_SETREF(elem, do_deepcopy(module, elem, memo));
         if (elem == NULL) {
             Py_DECREF(y);
             return NULL;
@@ -153,7 +153,7 @@ dict_iter_next(struct dict_iter* di, PyObject** key, PyObject** val)
 }
 
 static PyObject*
-deepcopy_dict(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
+deepcopy_dict(PyObject* module, PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
 {
     PyObject* y, * key, * val;
     Py_ssize_t size;
@@ -177,12 +177,12 @@ deepcopy_dict(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
         Py_INCREF(key);
         Py_INCREF(val);
 
-        Py_SETREF(key, do_deepcopy(key, memo));
+        Py_SETREF(key, do_deepcopy(module, key, memo));
         if (key == NULL) {
             Py_DECREF(val);
             break;
         }
-        Py_SETREF(val, do_deepcopy(val, memo));
+        Py_SETREF(val, do_deepcopy(module, val, memo));
         if (val == NULL) {
             Py_DECREF(key);
             break;
@@ -207,7 +207,7 @@ deepcopy_dict(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
 }
 
 static PyObject*
-deepcopy_tuple(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
+deepcopy_tuple(PyObject* module, PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
 {
     PyObject* y, * z, * elem, * copy;
     Py_ssize_t i, size;
@@ -228,7 +228,7 @@ deepcopy_tuple(PyObject* x, PyObject* memo, PyObject* id_x, Py_hash_t hash_id_x)
      */
     for (i = 0; i < size; ++i) {
         elem = PyTuple_GET_ITEM(x, i);
-        copy = do_deepcopy(elem, memo);
+        copy = do_deepcopy(module, elem, memo);
         if (copy == NULL) {
             Py_DECREF(y);
             return NULL;
@@ -295,7 +295,7 @@ static const struct deepcopy_dispatcher deepcopy_dispatch[] = {
 };
 #define N_DISPATCHERS ARRAY_SIZE(deepcopy_dispatch)
 
-static PyObject* do_deepcopy(PyObject* x, PyObject* memo)
+static PyObject* do_deepcopy(PyObject *module, PyObject* x, PyObject* memo)
 {
     unsigned i;
     PyObject* y, * id_x;
@@ -350,7 +350,7 @@ static PyObject* do_deepcopy(PyObject* x, PyObject* memo)
 
     Py_DECREF(id_x);
 
-    return do_deepcopy_fallback(x, memo);
+    return do_deepcopy_fallback(module, x, memo);
 }
 
 /*
